@@ -1,0 +1,35 @@
+Notes for the score paper
+
+Read macros article:
+https://lisper.in/reader-macros
+- apparently also in the book
+
+To Test:
+- multiple entries with same time
+- tempo changes
+- key sig changes
+- fractional beats
+- offsets of bars or beats
+
+Issues:
+- changing meters
+- evaling immediately vs later
+- tick match off by a beat
+- subsequent calls to an already used time are not working
+
+- timesigs in live??
+- TODO: simple note event
+
+Questions:
+- does plugsync work in Max? 
+- changing tempo and time sig in score
+
+Ideas
+- allow variables for times?
+- allow it to hop around?
+
+
+Thoughts:
+- commas ARE special in max, so having a replacement for comma does make sense
+
+

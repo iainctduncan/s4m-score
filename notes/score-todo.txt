@@ -1,0 +1,19 @@
+TODO on the score
+
+- lists of events aren't sensible
+- it stores procedures instead of quoted lists to eval
+
+- get rid of play-events if its reduntant
+
+- for now let's say first item in a nested call can't be a list
+  so we will use lists of lists:
+    :1-1  (n 60 90 120)
+    :1-2  ((n 60 90 120) (n 64 90 120))
+    :1-3  (n 60 90 ,(random 120))
+
+
+- priority:
+  - fix event insertion
+  - ensure they go in order
+  - allow breaking out of event processing loop
+
