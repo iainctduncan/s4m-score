@@ -11,30 +11,19 @@
 (send 'transport 1)
 (send 'transport 0)
 
+(begin
+  (send 'transport 'tempo 120)
+  (delay-tq 960 960 (lambda()(n 60 90 120)))
+  (send 'transport 'tempo 240)
+)
 
-(define s (make-score (hash-table :bbt '(8 4 480) :res 960) `(
-  :1-1-1  ((n 60 90 120) (n 62 90 120))
-))) 
+(begin
+  (send 'transport 'tempo 120)
+  (delay-tq 960 960 (lambda()(n 60 90 120)))
+  (send 'transport 'tempo 30)
+)
 
-; get this working
-(define s (make-score (hash-table :bbt '(8 4 480) :res 960) `(
-  :1-1-2  (n ,note-num 90 ,(random 120))
-; ,@( make-events )
+(set-tempo 120)
 
-)))
+(n 60 90 120)
 
-(define s (make-score (hash-table :bbt '(8 4 480) :res 960) 
-  :1-1-1  play-c
-;  :1-1-2  '(n 62 90 240)
-))
-
-(s 'start)
-(s 'stop)
-
-(s 'get-events)
-
-(hash-table 1 ((0 (play-c play-e)) (480 (play-c play-e))))
-
-(define e (s 'get 'events))
-
-(e 1 0 1)

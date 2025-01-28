@@ -145,12 +145,13 @@
       (cancel-delay cb-handle)
       (set! playing #f)
       (set! bar-index 0)
-      (set! tick-index 0))
+      (set! tick-index 0)
+      #f)
 
     (define (start)
       (post "score event start")
       (set! playing #t)
-      (tick))
+      (run-tick))
 
     ; set the index to a bar and tick point
     (define (cue . args)
@@ -158,19 +159,35 @@
       (let ((bar  (car args))
             (tick (if (> (length args) 1) (args 1) 0)))
         (set! bar-index (dec bar))
-        (set! tick-index tick))
-      (post " - cued to bar:" bar-index "tick:" tick-index))  
+        (set! tick-index tick)))
+
+    (define (go time-arg)
+      (let* ((bar&ticks (time-arg->bar&tick time-arg))
+             (bar (car bar&ticks))
+             (ticks (cdr bar&ticks)))
+        (cue bar ticks)
+        ; call tick for next pass directly (no scheduling)
+        (run-tick)
+        ; return #f to abort processing the rest of entries
+        #f)) 
+
+    (define (meter numer denom)
+      (set! beats-per-bar numer)
+      (send 'transport 'timesig numer denom))
+
+    (define (tempo bpm)
+      (send 'transport 'tempo bpm))
 
     (define (run-event evt)
       "execute an event entry"
       ;(post "run-event" evt)
       ; right now all events are lists that can be evaluated, may be expanded
       (eval evt))
-
+   
     ; playback, normally called as (tick), but can be called with an
     ; arg of time to advance: (tick 120), etc
-    (define (tick . args)
-      (post "score tick, bar-index:" bar-index "tick-index:" tick-index "args:" args)
+    (define (run-tick . args)
+      ;(post "score (tick), bar-index:" bar-index "tick-index:" tick-index "args:" args)
       ; on top of bar, load this bar's events into events-for-bar 
       (if (top-of-bar? tick-index) (begin
         (set! bar-index (inc bar-index))
@@ -179,30 +196,30 @@
         (set! events-left (or events-for-bar '()))
         (post "bar index:" bar-index "events-for-bar:" events-for-bar)
       ))
-      ; now we consume events up until current time
-      (while (not-null? events-left)
-        (let* ((tick-events-entry (car events-left))
-               (entry-time (car tick-events-entry)))
-          (if (<= entry-time tick-index)
-            (begin
-              (dolist (evt (cadr tick-events-entry)) 
-                (run-event evt))
-              (set! events-left (cdr events-left)))
-            (break))))  
-      ; increment the tick-index and schedule next iter
-      (if (null? args)
-        (set! tick-index (+ tick-res tick-index)) 
-        (set! tick-index (+ (args 0) tick-index)))
-      ; reschedule if playing
-      (if playing
-        (set! cb-handle (delay-tq tick-res tick-res tick)))
+      (let ((evt-res '()))
+        ; now we consume events up until current time
+        (while (not-null? events-left)
+          (let* ((tick-events-entry (car events-left))
+                 (entry-time (car tick-events-entry)))
+            (if (<= entry-time tick-index)
+              (begin
+                (dolist (evt (cadr tick-events-entry)) 
+                  ; run the event, if it returns #f, don't run anymore
+                  (set! evt-res (run-event evt))
+                  (if (not evt-res)
+                    (break)))
+                (set! events-left (cdr events-left)))
+              (break))))  
+        ; increment the tick-index unless we got a #f back from an event (stopping or jumping)
+        (if evt-res 
+          (if (null? args)
+            (set! tick-index (+ tick-res tick-index)) 
+            (set! tick-index (+ (args 0) tick-index))))
+        ; reschedule if playing
+        (if (and playing evt-res)
+          (set! cb-handle (delay-tq tick-res tick-res run-tick))))
       ; return null 
       '())
-
-    (define (go time)
-      (post "(go)" time)
-      
-      )
 
     ; object boilerplate to allow getting and setting in object
     (define env (curlet))

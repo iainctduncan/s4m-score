@@ -1,0 +1,8 @@
+Notes on Max transport meters
+- message to change transport time sig is "timesig 4 4"
+
+- in Max for Live, one must control the tempo with the Live API
+- presumably the same for timesig
+
+
+

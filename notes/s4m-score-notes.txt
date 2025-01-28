@@ -5,31 +5,47 @@ https://lisper.in/reader-macros
 - apparently also in the book
 
 To Test:
-- multiple entries with same time
-- tempo changes
-- key sig changes
+- meter changes 
 - fractional beats
 - offsets of bars or beats
+- 3/4 12/8 7/8, etc
 
 Issues:
 - changing meters
-- evaling immediately vs later
-- tick match off by a beat
-- subsequent calls to an already used time are not working
-
 - timesigs in live??
-- TODO: simple note event
+- timing goes out the window if the resolution is too low,
+  which I didn't think was supposed to happen? 
+  should we not just get underruns?
+  I guess that shows that the scheduler IS getting preempted???
+  - or is it an error? works ok down to res 2 and then craps out at 1, weird...
+- if we change meter, what happens or times that are out of range??
+
+For paper:
+- note about metro not starting in right place when active
+- do a long record to check for timing, and compare against looping too
+  - at a quick glance it seems good
+
+TODO:
+- figure out lowest resolution workable - seems to be 2, 4 is definitely ok
 
 Questions:
-- does plugsync work in Max? 
-- changing tempo and time sig in score
-
-Ideas
-- allow variables for times?
-- allow it to hop around?
 
 
 Thoughts:
 - commas ARE special in max, so having a replacement for comma does make sense
+- remember: delay-tq calculates the correct time according to the tempo of the transport,
+  but doesn't need the transport to be running
+  - the quantize does have an effect if the transport is running
+  - but tempo changes after scheduling do NOT
+- which means that the way we are running right now does make sense for ensuring
+  tempo glides can work - scheduling everything by the bar would be a problem
+- I think it's fine to say in paper that one must experiment with the lowest resolution to work
+  - can provide my sync test patch
 
+- would be nice to be able to replace an entire bar
 
+- big thing to look into to make it more compelling would be adding delays that can go 
+  to different named transports
+
+- need to make sure it can happily run for a long time too!
+  - maybe reuse a clock??
